@@ -44,6 +44,7 @@ var (
 
 type Container struct {
 	sync.Mutex
+	startLock sync.Mutex
 	root   string // Path to the "home" of the container, including metadata.
 	basefs string // Path to the graphdriver mountpoint
 
@@ -275,6 +276,9 @@ func populateCommand(c *Container, env []string) error {
 func (container *Container) Start() (err error) {
 	container.Lock()
 	defer container.Unlock()
+
+	container.startLock.Lock()
+	defer container.startLock.Unlock()
 
 	if container.State.IsRunning() {
 		return nil
@@ -586,6 +590,9 @@ func (container *Container) Kill() error {
 }
 
 func (container *Container) Stop(seconds int) error {
+	container.startLock.Lock()
+	defer container.startLock.Unlock()
+
 	if !container.State.IsRunning() {
 		return nil
 	}
