@@ -521,9 +521,14 @@ func (container *Container) cleanup() {
 }
 
 func (container *Container) KillSig(sig int) error {
-	log.Debugf("Sending %d to %s", sig, container.ID)
 	container.Lock()
 	defer container.Unlock()
+
+	return container.killSig(sig)
+}
+
+func (container *Container) killSig(sig int) error {
+	log.Debugf("Sending %d to %s", sig, container.ID)
 
 	// We could unpause the container for them rather than returning this error
 	if container.State.IsPaused() {
@@ -569,12 +574,15 @@ func (container *Container) Unpause() error {
 }
 
 func (container *Container) Kill() error {
+	container.Lock()
+	defer container.Unlock()
+
 	if !container.State.IsRunning() {
 		return nil
 	}
 
 	// 1. Send SIGKILL
-	if err := container.KillSig(9); err != nil {
+	if err := container.killSig(9); err != nil {
 		return err
 	}
 
