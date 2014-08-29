@@ -27,6 +27,7 @@ import (
 	"github.com/docker/docker/graph"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/pkg/broadcastwriter"
+	"github.com/docker/docker/pkg/debugmutex"
 	"github.com/docker/docker/pkg/graphdb"
 	"github.com/docker/docker/pkg/log"
 	"github.com/docker/docker/pkg/namesgenerator"
@@ -537,6 +538,7 @@ func (daemon *Daemon) newContainer(name string, config *runconfig.Config, img *i
 		Driver:          daemon.driver.String(),
 		ExecDriver:      daemon.execDriver.Name(),
 		State:           NewState(),
+		Mutex: 					 debugmutex.New(5),
 	}
 	container.root = daemon.containerRoot(container.ID)
 
